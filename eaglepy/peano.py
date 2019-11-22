@@ -38,12 +38,12 @@ sense_table = [-1, -1, -1, 1, 1, -1, -1, -1]
 
 
 def find_cell_coords(cell_size, x, y, z):
-    #find the coordinates of the cell corresponding to position x,y,z
+    """ find the coordinates of the cell corresponding to position x,y,z """
     nx, ny, nz = x//cell_size, y//cell_size, z//cell_size
     return nx.astype(int), ny.astype(int), nz.astype(int)
 
 def ph_key(x,y,z,bits=6):
-    #return the P-H key for the position x, y, z
+    """ return the P-H key for the position x, y, z """
     mask = 1 << (bits - 1)
     key = 0
     rotation = 0
@@ -76,7 +76,7 @@ def ph_key(x,y,z,bits=6):
     return key
 
 def coordinate_grid(centre, side_length, n=70):
-    #make a grid of coordinates in a cube around a given point
+    """make a grid of coordinates in a cube around a given point """
     xstart = centre[0]-1.*side_length/2.
     ystart = centre[1]-1.*side_length/2.
     zstart = centre[2]-1.*side_length/2.
@@ -86,7 +86,7 @@ def coordinate_grid(centre, side_length, n=70):
     return np.mgrid[xstart:xend:n*1j, ystart:yend:n*1j, zstart:zend:n*1j].reshape(3,n*n*n).T
 
 def get_unique_grid_keys(grid, cell_size, box_size, bits=6):
-    #get the unique P-H keys corresponding to a grid of points
+    """ get the unique P-H keys corresponding to a grid of points """
     grid = np.mod(grid, box_size) #wrap regions outside simulation volume
     nxyz = np.array(find_cell_coords(cell_size,grid[:,0], grid[:,1],grid[:,2]))
     nxyz = np.unique(nxyz.T, axis=0)

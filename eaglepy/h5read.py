@@ -9,6 +9,17 @@ base_path = os.environ['EAGLE_BASE_PATH']
 release = os.environ['EAGLE_ACCESS_TYPE']
 
 class Snapshot:
+    """ Basic SnapShot superclass which finds the relevant files and gets relevant information
+    regarding the snapshot specified.
+
+    arguments:
+        run - the run (e.g. L0012N0188)
+        model - an EAGLE model (e.g. Ref)
+        tag - a tag string specifying a snapshot output (e.g. 028_z000p000)
+
+    history:
+        written - Mackereth (UoB) - 22/11/2019
+     """
     def __init__(self, run, model, tag):
         #store the snapshot identity info
         self.run = run
@@ -46,7 +57,22 @@ class Snapshot:
 
 
 class SnapshotRegion(Snapshot):
+    """ A class inheriting from SnapShot, which defines a region inside a larger simulation snapshot.
+    when initialised, this will read the files in that region, and get the indices of the particles inside the
+    desired region. The necessary datasets can then be loaded by using get_dataset.
+
+    arguments:
+        run - the run (e.g. L0012N0188)
+        model - an EAGLE model (e.g. Ref)
+        tag - a tag string specifying a snapshot output (e.g. 028_z000p000)
+        center - the center of the desired region
+        sidelength - the length of a side of the volume required
+
+    history:
+        written - Mackereth (UoB) - 22/11/2019
+     """
     def __init__(self, run, model, tag, center, sidelength):
+        #we want everything from SnapShot plus some extras
         super().__init__(run, model, tag)
         self.center = center
         self.sidelength = sidelength
@@ -105,6 +131,7 @@ class SnapshotRegion(Snapshot):
         return np.concatenate(out)
 
     def _get_parttype_files(self, parttype, keys):
+        """ get the files containing this region for a given particle type """
         Nfiles = []
         ptypeind = self._ptypeind[parttype]
         for i in range(len(keys)):
@@ -121,12 +148,9 @@ class SnapshotRegion(Snapshot):
         return Nfiles
 
 
-
-
-
 def natural_sort(l):
-    #natural sort using regex (adapted by Mark Byers on StackOverflow
-    #from http://www.codinghorror.com/blog/2007/12/sorting-for-humans-natural-sort-order.html)
+    """natural sort using regex (adapted by Mark Byers on StackOverflow
+    from http://www.codinghorror.com/blog/2007/12/sorting-for-humans-natural-sort-order.html)"""
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
     return sorted(l, key = alphanum_key)
