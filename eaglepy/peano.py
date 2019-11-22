@@ -1,5 +1,8 @@
 import numpy as np
 
+""" A great deal of this code is thieved from the Peano-Hilbert sorting algorithms included
+in Gadget-2, written by Volker Springel"""
+
 quadrants = [
   [[[0, 7], [1, 6]], [[3, 4], [2, 5]]],
   [[[7, 4], [6, 5]], [[0, 3], [1, 2]]],
