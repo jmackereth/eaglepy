@@ -75,7 +75,7 @@ def ph_key(x,y,z,bits=6):
         mask = mask >> 1
     return key
 
-def coordinate_grid(centre, side_length, n=70):
+def coordinate_grid(centre, side_length, boxsize, n=70):
     """make a grid of coordinates in a cube around a given point """
     xstart = centre[0]-1.*side_length/2.
     ystart = centre[1]-1.*side_length/2.
@@ -83,7 +83,9 @@ def coordinate_grid(centre, side_length, n=70):
     xend = centre[0]+1.*side_length/2.
     yend = centre[1]+1.*side_length/2.
     zend = centre[2]+1.*side_length/2.
-    return np.mgrid[xstart:xend:n*1j, ystart:yend:n*1j, zstart:zend:n*1j].reshape(3,n*n*n).T
+    coords = np.mgrid[xstart:xend:n*1j, ystart:yend:n*1j, zstart:zend:n*1j].reshape(3,n*n*n).T
+    coords = np.mod(coords, boxsize) #wrap outside regions
+    return coords
 
 def get_unique_grid_keys(grid, cell_size, box_size, bits=6):
     """ get the unique P-H keys corresponding to a grid of points """
