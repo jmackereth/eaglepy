@@ -183,6 +183,7 @@ class SnapshotRegion(Snapshot):
                 coords.append(np.array([[None,None,None]]))
                 velocities.append(np.array([[None,None,None]]))
                 indices.append(np.array(None))
+                continue
             # load the file
             thisfilecoords = np.array(h5py.File(file, 'r')['/PartType'+str(parttype)+'/Coordinates'])
             thisfilevels = np.array(h5py.File(file, 'r')['/PartType'+str(parttype)+'/Velocity'])
