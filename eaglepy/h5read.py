@@ -153,6 +153,7 @@ class SnapshotRegion(Snapshot):
         grid = peano.coordinate_grid(center, side_length, self.BoxSize, n=phgrid_n)
         keys  = peano.get_unique_grid_keys(grid, self.HashGridCellSize, self.BoxSize, bits=self.HashBits)
         self.files_for_region = []
+        self.file_indices = []
         coordinates = []
         velocities = []
         indices = []
