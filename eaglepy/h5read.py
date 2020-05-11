@@ -169,6 +169,9 @@ class SnapshotRegion(Snapshot):
         self.velocities = velocities
         self.coordinates = coordinates
         self.indices = indices
+        self.NumPart_ThisRegion = np.zeros(len(self.NumPartTotal))
+        for ii,type in enumerate(self.ParticleTypePresent):
+            self.NumPart_ThisRegion[type] = len(self.coordinates[ii])
 
 
     def _get_parttype_indices(self, parttype, files, file_indices):
