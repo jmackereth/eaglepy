@@ -21,7 +21,7 @@ class Snapshot:
     history:
         written - Mackereth (UoB) - 22/11/2019
      """
-    def __init__(self, run, model, tag):
+    def __init__(self, run, model, tag, load_particles=False):
         #store the snapshot identity info
         self.run = run
         self.model = model
@@ -62,6 +62,8 @@ class Snapshot:
             self.firstkeys[ii] = np.array(h5py.File(self.files[0], 'r')['/HashTable/PartType'+str(parttype)+'/FirstKeyInFile'])
             self.lastkeys[ii] = np.array(h5py.File(self.files[0], 'r')['/HashTable/PartType'+str(parttype)+'/LastKeyInFile'])
             self.datasets['PartType'+str(parttype)] = list(h5py.File(self.files[0], 'r')['/PartType'+str(parttype)].keys())
+        if load_particles:
+            self._get_coordinates()
 
     def _get_coordinates(self):
         """ Load all the coordinates of the available particles
