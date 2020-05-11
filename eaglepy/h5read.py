@@ -61,7 +61,9 @@ class Snapshot:
         for ii,parttype in enumerate(self.ParticleTypePresent):
             self.firstkeys[ii] = np.array(h5py.File(self.files[0], 'r')['/HashTable/PartType'+str(parttype)+'/FirstKeyInFile'])
             self.lastkeys[ii] = np.array(h5py.File(self.files[0], 'r')['/HashTable/PartType'+str(parttype)+'/LastKeyInFile'])
-            self.datasets['PartType'+str(parttype)] = list(h5py.File(self.files[0], 'r')['/PartType'+str(parttype)].keys())
+            #be sure we get a file with this parttype (only really an issue for when low N stars!!)
+            ind = np.nonzero(h5py.File(self.files[0], 'r')['/HashTable/PartType'+str(parttype)+'/LastKeyInFile'][:])[0][0]
+            self.datasets['PartType'+str(parttype)] = list(h5py.File(self.files[ind], 'r')['/PartType'+str(parttype)].keys())
         if load_particles:
             self._get_coordinates()
 
