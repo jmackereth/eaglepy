@@ -180,7 +180,9 @@ class SnapshotRegion(Snapshot):
         for ii,file in enumerate(files):
             #check this particle type is present here
             if not self.ParticleTypePresent_file[file_indices[ii], parttype]:
-                continue
+                coords.append(np.array([[None,None,None]]))
+                velocities.append(np.array([[None,None,None]]))
+                indices.append(np.array(None))
             # load the file
             thisfilecoords = np.array(h5py.File(file, 'r')['/PartType'+str(parttype)+'/Coordinates'])
             thisfilevels = np.array(h5py.File(file, 'r')['/PartType'+str(parttype)+'/Velocity'])
