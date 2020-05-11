@@ -50,6 +50,10 @@ class Snapshot:
         self.HubbleParam  = self.header_dict['HubbleParam']
         self.NumPartTotal = self.header_dict['NumPart_Total']
         self.ParticleTypePresent = np.where(self.NumPartTotal > 0)[0]
+        self.ParticleTypePresent_file = np.zeros((len(self.files),len(self.NumPartTotal)), dtype=bool)
+        for ii, file in self.files:
+            head = dict(h5py.File(file, 'r')['/Header'].attrs.items())
+            self.ParticleTypePresent_file[ii, head['NumPart_ThisFile'] > 0] = True
         self._ptypeind = {self.ParticleTypePresent[i]:i for i in range(len(self.ParticleTypePresent))}
         #get the Hash Table info for P-H key sorting
         self.HashBits = dict(h5py.File(self.files[0], 'r')['/HashTable'].attrs.items())['HashBits']
@@ -155,8 +159,9 @@ class SnapshotRegion(Snapshot):
         for ii,type in enumerate(self.ParticleTypePresent):
             Nfiles = self._get_parttype_files(type, keys)
             self.files_for_region.append(np.array(self.files)[Nfiles])
+            self.file_indices.append(Nfiles)
             #now load the coordinates in these files and save the indices for each particle type
-            thistypecoord, thistypevels, thistypeindices = self._get_parttype_indices(type, self.files_for_region[ii])
+            thistypecoord, thistypevels, thistypeindices = self._get_parttype_indices(type, self.files_for_region[ii], self.file_indices[ii])
             coordinates.append(thistypecoord)
             velocities.append(thistypevels)
             indices.append(thistypeindices)
@@ -165,13 +170,16 @@ class SnapshotRegion(Snapshot):
         self.indices = indices
 
 
-    def _get_parttype_indices(self, parttype, files):
+    def _get_parttype_indices(self, parttype, files, file_indices):
         """get the coordinates and indices for a given particle type in a given region"""
         if parttype not in self.ParticleTypePresent:
             warnings.warn('Particle type is not present, returning empty arrays...')
             return np.array([]), np.array([]), np.array([])
         coords, velocities, indices = [], [], []
-        for file in files:
+        for ii,file in enumerate(files):
+            #check this particle type is present here
+            if not self.ParticleTypePresent_file[file_indices[ii], parttype]:
+                continue
             # load the file
             thisfilecoords = np.array(h5py.File(file, 'r')['/PartType'+str(parttype)+'/Coordinates'])
             thisfilevels = np.array(h5py.File(file, 'r')['/PartType'+str(parttype)+'/Velocity'])
