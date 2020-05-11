@@ -51,7 +51,7 @@ class Snapshot:
         self.NumPartTotal = self.header_dict['NumPart_Total']
         self.ParticleTypePresent = np.where(self.NumPartTotal > 0)[0]
         self.ParticleTypePresent_file = np.zeros((len(self.files),len(self.NumPartTotal)), dtype=bool)
-        for ii, file in self.files:
+        for ii, file in enumerate(self.files):
             head = dict(h5py.File(file, 'r')['/Header'].attrs.items())
             self.ParticleTypePresent_file[ii, head['NumPart_ThisFile'] > 0] = True
         self._ptypeind = {self.ParticleTypePresent[i]:i for i in range(len(self.ParticleTypePresent))}
