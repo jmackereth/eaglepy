@@ -63,6 +63,38 @@ class Snapshot:
             self.lastkeys[ii] = np.array(h5py.File(self.files[0], 'r')['/HashTable/PartType'+str(parttype)+'/LastKeyInFile'])
             self.datasets['PartType'+str(parttype)] = list(h5py.File(self.files[0], 'r')['/PartType'+str(parttype)].keys())
 
+    def _get_coordinates(self):
+        """ Load all the coordinates of the available particles
+        """
+        #load coordinates and velocities
+        coordinates = []
+        velocities = []
+        for ii,type in enumerate(self.ParticleTypePresent):
+            Nfiles = self._get_parttype_files(type, keys)
+            self.files_for_region.append(np.array(self.files)[Nfiles])
+            #now load the coordinates in these files and save the indices for each particle type
+            thistypecoord, thistypevels = self._get_parttype_indices(type, self.files)
+            coordinates.append(thistypecoord)
+            velocities.append(thistypevels)
+            indices.append(thistypeindices)
+        self.velocities = velocities
+        self.coordinates = coordinates
+
+    def _get_coords_vels(self, parttype, files):
+        """get the coordinates and velocities for all particles of a certain type"""
+        if parttype not in self.ParticleTypePresent:
+            warnings.warn('Particle type is not present, returning empty arrays...')
+            return np.array([]), np.array([]), np.array([])
+        coords, velocities, indices = [], [], []
+        for file in files:
+            # load the file
+            thisfilecoords = np.array(h5py.File(file, 'r')['/PartType'+str(parttype)+'/Coordinates'])
+            thisfilevels = np.array(h5py.File(file, 'r')['/PartType'+str(parttype)+'/Velocity'])
+            #store the coordinates and the indices of these particles in the file
+            coords.append(thisfilecoords)
+            velocities.append(thisfilevels)
+        return np.concatenate(coords), np.concatenate(velocities)
+
 
 
 class SnapshotRegion(Snapshot):
