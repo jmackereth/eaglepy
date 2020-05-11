@@ -212,6 +212,9 @@ class SnapshotRegion(Snapshot):
         out = []
         ptypeind = self._ptypeind[parttype]
         for ii,file in enumerate(self.files_for_region[ptypeind]):
+            if not self.ParticleTypePresent_file[self.file_indices[ii], parttype]:
+                warnings.warn('Particle type is not present, returning empty arrays...')
+                out.append(np.array([]))
             # load this file and get the particles
             out.append(np.array(h5py.File(file, 'r')[key])[self.indices[ptypeind][ii]])
         return np.concatenate(out)
