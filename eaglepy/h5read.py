@@ -155,20 +155,27 @@ class SnapshotRegion(Snapshot):
         #work out which files contain the desired region
         grid = peano.coordinate_grid(center, side_length, self.BoxSize, n=phgrid_n)
         keys  = peano.get_unique_grid_keys(grid, self.HashGridCellSize, self.BoxSize, bits=self.HashBits)
+        particles_in_volume = np.copy(self.ParticleTypePresent)
         self.files_for_region = []
         self.file_indices = []
         coordinates = []
         velocities = []
         indices = []
-        for ii,type in enumerate(self.ParticleTypePresent):
+        for ii,type in enumerate(particles_in_volume):
             Nfiles = self._get_parttype_files(type, keys)
             self.files_for_region.append(np.array(self.files)[Nfiles])
             self.file_indices.append(Nfiles)
-            #now load the coordinates in these files and save the indices for each particle type
-            thistypecoord, thistypevels, thistypeindices = self._get_parttype_indices(type, self.files_for_region[ii], self.file_indices[ii])
-            coordinates.append(thistypecoord)
-            velocities.append(thistypevels)
-            indices.append(thistypeindices)
+            present = False
+            for file in self.files_for_region[ii]:
+                present += _particle_type_present(type, file)
+            if present:
+                #now load the coordinates in these files and save the indices for each particle type
+                thistypecoord, thistypevels, thistypeindices = self._get_parttype_indices(type, self.files_for_region[ii], self.file_indices[ii])
+                coordinates.append(thistypecoord)
+                velocities.append(thistypevels)
+                indices.append(thistypeindices)
+            else:
+                np.delete(self.ParticleTypePresent,ii)
         self.velocities = velocities
         self.coordinates = coordinates
         self.indices = indices
