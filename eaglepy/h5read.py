@@ -116,9 +116,7 @@ class Snapshot:
         return np.concatenate(out)
 
 
-    def _particle_type_present(type, file):
-        head = dict(h5py.File(file, 'r')['/Header'].attrs.items())
-        return head['NumPart_ThisFile'][type] > 0
+
 
 
 
@@ -184,7 +182,7 @@ class SnapshotRegion(Snapshot):
         coords, velocities, indices = [], [], []
         for ii,file in enumerate(files):
             #check this particle type is present here
-            if not self._particle_type_present(parttype, file):
+            if not _particle_type_present(parttype, file):
                 coords.append(np.array([[None,None,None]]))
                 velocities.append(np.array([[None,None,None]]))
                 indices.append(np.array(None))
@@ -220,7 +218,7 @@ class SnapshotRegion(Snapshot):
         out = []
         ptypeind = self._ptypeind[parttype]
         for ii,file in enumerate(self.files_for_region[ptypeind]):
-            if not self._particle_type_present(parttype, file):
+            if not _particle_type_present(parttype, file):
                 if dataset in ['Coordinates', 'Velocity']:
                     out.append(np.array([[None,None,None]]))
                 else:
@@ -383,3 +381,7 @@ def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
     return sorted(l, key = alphanum_key)
+
+def _particle_type_present(type, file):
+    head = dict(h5py.File(file, 'r')['/Header'].attrs.items())
+    return head['NumPart_ThisFile'][type] > 0
