@@ -171,6 +171,9 @@ class SnapshotRegion(Snapshot):
             if present:
                 #now load the coordinates in these files and save the indices for each particle type
                 thistypecoord, thistypevels, thistypeindices = self._get_parttype_indices(type, self.files_for_region[ii], self.file_indices[ii])
+                if thistypecoord is None:
+                    self.ParticleTypePresent = np.delete(self.ParticleTypePresent,ii)
+                    continue
                 coordinates.append(thistypecoord)
                 velocities.append(thistypevels)
                 indices.append(thistypeindices)
@@ -179,7 +182,7 @@ class SnapshotRegion(Snapshot):
         self.velocities = velocities
         self.coordinates = coordinates
         self.indices = indices
-        self.NumPart_ThisRegion = np.zeros(len(self.NumPartTotal))
+        self.NumPart_ThisRegion = np.zeros(len(self.NumPartTotal),dtype=np.int64)
         for ii,type in enumerate(self.ParticleTypePresent):
             self.NumPart_ThisRegion[type] = len(self.coordinates[ii])
 
