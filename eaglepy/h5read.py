@@ -116,6 +116,11 @@ class Snapshot:
         return np.concatenate(out)
 
 
+    def _particle_type_present(type, file):
+        head = dict(h5py.File(file, 'r')['/Header'].attrs.items())
+        return head['NumPart_ThisFile'][type] > 0
+
+
 
 class SnapshotRegion(Snapshot):
     """ A class inheriting from SnapShot, which defines a region inside a larger simulation snapshot.
@@ -176,13 +181,10 @@ class SnapshotRegion(Snapshot):
 
     def _get_parttype_indices(self, parttype, files, file_indices):
         """get the coordinates and indices for a given particle type in a given region"""
-        if parttype not in self.ParticleTypePresent:
-            warnings.warn('Particle type is not present, returning empty arrays...')
-            return np.array([]), np.array([]), np.array([])
         coords, velocities, indices = [], [], []
         for ii,file in enumerate(files):
             #check this particle type is present here
-            if not self.ParticleTypePresent_file[file_indices[ii], parttype]:
+            if not self._particle_type_present(parttype, file):
                 coords.append(np.array([[None,None,None]]))
                 velocities.append(np.array([[None,None,None]]))
                 indices.append(np.array(None))
@@ -210,11 +212,20 @@ class SnapshotRegion(Snapshot):
         """ get the data for a given entry in the HDF5 file for the given region """
         if parttype not in self.ParticleTypePresent:
             warnings.warn('Particle type is not present, returning empty arrays...')
-            return np.array([])
+            if dataset in ['Coordinates', 'Velocity']:
+                return np.array([[None,None,None]])
+            else:
+                return np.array(None)
         key = os.path.join('/PartType'+str(parttype),dataset)
         out = []
         ptypeind = self._ptypeind[parttype]
         for ii,file in enumerate(self.files_for_region[ptypeind]):
+            if not self._particle_type_present(parttype, file):
+                if dataset in ['Coordinates', 'Velocity']:
+                    out.append(np.array([[None,None,None]]))
+                else:
+                    out.append(np.array(None))
+                continue
             # load this file and get the particles
             out.append(np.array(h5py.File(file, 'r')[key])[self.indices[ptypeind][ii]])
         return np.concatenate(out)
