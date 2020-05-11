@@ -97,6 +97,18 @@ class Snapshot:
             velocities.append(thisfilevels)
         return np.concatenate(coords), np.concatenate(velocities)
 
+    def get_dataset(self, parttype, dataset):
+        """ get the data for a given entry in the HDF5 file for the given region """
+        if parttype not in self.ParticleTypePresent:
+            warnings.warn('Particle type is not present, returning empty arrays...')
+            return np.array([])
+        key = os.path.join('/PartType'+str(parttype),dataset)
+        out = []
+        for ii,file in enumerate(self.files):
+            # load this file and get the particles
+            out.append(np.array(h5py.File(file, 'r')[key]))
+        return np.concatenate(out)
+
 
 
 class SnapshotRegion(Snapshot):
