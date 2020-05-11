@@ -175,7 +175,7 @@ class SnapshotRegion(Snapshot):
                 velocities.append(thistypevels)
                 indices.append(thistypeindices)
             else:
-                np.delete(self.ParticleTypePresent,ii)
+                self.ParticleTypePresent = np.delete(self.ParticleTypePresent,ii)
         self.velocities = velocities
         self.coordinates = coordinates
         self.indices = indices
