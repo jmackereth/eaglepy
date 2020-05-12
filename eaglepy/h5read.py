@@ -117,29 +117,29 @@ class Snapshot:
             out.append(np.array(h5py.File(file, 'r')[key]))
         return np.concatenate(out)
 
-    def t_lookback(a):
+    def t_lookback(self,a):
         return a / (np.sqrt(self.Omega0 * a + self.OmegaLambda * (a ** 4)))
 
-    def z2age(z):
+    def z2age(self,z):
         a = 1 / (1 + z)
-        t = np.array([quad(t_lookback, x, self.a0)[0] for x in a])
+        t = np.array([quad(self.t_lookback, x, self.a0)[0] for x in a])
         return (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t
 
-    def a2age(a):
-        t = np.array([quad(t_lookback, x, self.a0)[0] for x in a])
+    def a2age(self,a):
+        t = np.array([quad(self.t_lookback, x, self.a0)[0] for x in a])
         return (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t
 
-    def z2tau(z):
-        t_em = quad(t_lookback, 0., self.a0)[0]
+    def z2tau(self,z):
+        t_em = quad(self.t_lookback, 0., self.a0)[0]
         t_em = (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t_em
         a = 1 / (1 + z)
-        t = np.array([quad(t_lookback, x, self.a0)[0] for x in a])
+        t = np.array([quad(self.t_lookback, x, self.a0)[0] for x in a])
         return t_em - ((1 / (h * 100)) * (3.086e19 / 3.1536e16) * t)
 
-    def a2tau(a):
-        t_em = quad(t_lookback, 0., self.a0)[0]
+    def a2tau(self,a):
+        t_em = quad(self.t_lookback, 0., self.a0)[0]
         t_em = (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t_em
-        t = np.array([quad(t_lookback, x, self.a0)[0] for x in a])
+        t = np.array([quad(self.t_lookback, x, self.a0)[0] for x in a])
         return t_em - ((1 / (h * 100)) * (3.086e19 / 3.1536e16) * t)
 
 
