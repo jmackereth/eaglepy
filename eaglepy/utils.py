@@ -9,7 +9,7 @@ def angular_momentum(coordinates, velocities, mass):
     tot = np.sum(vec, axis=0)
     return tot/np.linalg.norm(tot)
 
-def _transform(self,vector):
+def _transform(vector):
     """Build a transformation matrix"""
     a = vector
     b = np.matrix([0,0,1])
@@ -34,7 +34,7 @@ def center_and_align(coordinates,velocities,mass, center=None, transform=None, a
     bulkvel = np.median(velocities[inside], axis=0)
     tvelocities = velocities  - np.array(bulkvel)
     if transform is None:
-        transform = self._transform(self.angular_momentum(tcoordinates, tvelocities,mass))
+        transform = _transform(angular_momentum(tcoordinates, tvelocities,mass))
     if verbose:
         print('Transforming Coordinates...')
     for i in range(len(tcoordinates)):
