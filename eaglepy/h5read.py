@@ -136,6 +136,12 @@ class Snapshot:
         t = np.array([quad(t_lookback, x, self.a0)[0] for x in a])
         return t_em - ((1 / (h * 100)) * (3.086e19 / 3.1536e16) * t)
 
+    def a2tau(a):
+        t_em = quad(t_lookback, 0., self.a0)[0]
+        t_em = (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t_em
+        t = np.array([quad(t_lookback, x, self.a0)[0] for x in a])
+        return t_em - ((1 / (h * 100)) * (3.086e19 / 3.1536e16) * t)
+
 
 
 
