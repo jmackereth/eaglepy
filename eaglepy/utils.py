@@ -26,21 +26,33 @@ def center_and_align(coordinates,velocities,mass, center=None, transform=None, a
         or by computation of the mean angular momentum of some range of particles (defined by some percentile)
         of the radii
     """
-    tcoordinates = coordinates - np.array(self.center)
+    if center is None:
+        center = find_center_of_mass(coordinates)
+    tcoordinates = coordinates - np.array(center)
     radii = np.linalg.norm(tcoordinates, axis=1)
     inside = radii < np.percentile(radii, align_percentile)
     bulkvel = np.median(velocities[inside], axis=0)
     tvelocities = velocities  - np.array(bulkvel)
-    if use_transform:
-        t = trans
-    else:
-        t = self._transform(self.angular_momentum(tcoordinates, tvelocities,mass))
+    if transform is None:
+        transform = self._transform(self.angular_momentum(tcoordinates, tvelocities,mass))
     if verbose:
         print('Transforming Coordinates...')
     for i in range(len(tcoordinates)):
-        tcoordinates[i] = np.einsum('ij,aj->ai', t, tcoordinates[i])
-        tvelocities[i] = np.einsum('ij,aj->ai', t, tvelocities[i])
+        tcoordinates[i] = np.einsum('ij,aj->ai', transform, tcoordinates[i])
+        tvelocities[i] = np.einsum('ij,aj->ai', transform, tvelocities[i])
     if return_transform:
-        return tcoordinates, tvelocities, t
+        return tcoordinates, tvelocities, transform
     else:
         return tcoordinates, tvelocities
+
+def find_center_of_mass(coords, quantile=5, max_iter=20, final_npart=1000):
+    """ find the center of mass of a set of particles """
+    percentiles = np.percentile(coords, [quantile,100-quantile], axis=0)
+    mask = np.all(coords > percentiles[0], axis=1) & np.all(coords < percentiles[1], axis=1)
+    i = 1
+    while sum(mask) > final_npart and i < max_iter:
+        coords = coords[mask]
+        percentiles = np.percentile(coords, [quantile,100-quantile], axis=0)
+        mask = np.all(coords > percentiles[0], axis=1) & np.all(coords < percentiles[1], axis=1)
+        i += 1
+    return np.median(coords, axis=0)
