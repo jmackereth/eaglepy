@@ -123,24 +123,24 @@ class Snapshot:
     def z2age(self,z):
         a = 1 / (1 + z)
         t = np.array([quad(self.t_lookback, x, self.a0)[0] for x in a])
-        return (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t
+        return (1 / (self.HubbleParam * 100)) * (3.086e19 / 3.1536e16) * t
 
     def a2age(self,a):
         t = np.array([quad(self.t_lookback, x, self.a0)[0] for x in a])
-        return (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t
+        return (1 / (self.HubbleParam * 100)) * (3.086e19 / 3.1536e16) * t
 
     def z2tau(self,z):
         t_em = quad(self.t_lookback, 0., self.a0)[0]
-        t_em = (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t_em
+        t_em = (1 / (self.HubbleParam * 100)) * (3.086e19 / 3.1536e16) * t_em
         a = 1 / (1 + z)
         t = np.array([quad(self.t_lookback, x, self.a0)[0] for x in a])
-        return t_em - ((1 / (h * 100)) * (3.086e19 / 3.1536e16) * t)
+        return t_em - ((1 / (self.HubbleParam * 100)) * (3.086e19 / 3.1536e16) * t)
 
     def a2tau(self,a):
         t_em = quad(self.t_lookback, 0., self.a0)[0]
-        t_em = (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t_em
+        t_em = (1 / (self.HubbleParam * 100)) * (3.086e19 / 3.1536e16) * t_em
         t = np.array([quad(self.t_lookback, x, self.a0)[0] for x in a])
-        return t_em - ((1 / (h * 100)) * (3.086e19 / 3.1536e16) * t)
+        return t_em - ((1 / (self.HubbleParam * 100)) * (3.086e19 / 3.1536e16) * t)
 
 
 
