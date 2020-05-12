@@ -37,9 +37,8 @@ def center_and_align(coordinates,velocities,mass, center=None, transform=None, a
         transform = _transform(angular_momentum(tcoordinates, tvelocities,mass))
     if verbose:
         print('Transforming Coordinates...')
-    for i in range(len(tcoordinates)):
-        tcoordinates[i] = np.einsum('ij,aj->ai', transform, tcoordinates[i])
-        tvelocities[i] = np.einsum('ij,aj->ai', transform, tvelocities[i])
+    tcoordinates = np.einsum('ij,aj->ai', transform, tcoordinates)
+    tvelocities = np.einsum('ij,aj->ai', transform, tvelocities)
     if return_transform:
         return tcoordinates, tvelocities, transform
     else:
