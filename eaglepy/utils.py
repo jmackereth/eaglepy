@@ -21,7 +21,7 @@ def _transform(vector):
     return transform
 
 
-def center_and_align(coordinates,velocities,mass, center=None, transform=None, align_percentile=10, verbose=False):
+def center_and_align(coordinates,velocities,mass, center=None, transform=None, align_percentile=10, verbose=False, return_transform=False):
     """Center and align the particles in the region either with a supplied transformation matrix
         or by computation of the mean angular momentum of some range of particles (defined by some percentile)
         of the radii
