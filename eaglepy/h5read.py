@@ -5,6 +5,7 @@ import re
 import numpy as np
 from . import peano
 import warnings
+from scipy.integrate import quad
 
 base_path = os.environ['EAGLE_BASE_PATH']
 release = os.environ['EAGLE_ACCESS_TYPE']
@@ -48,6 +49,7 @@ class Snapshot:
         self.solar_abundances = dict([(self.elements[i],self.abundance_dict['SolarAbundance_%s' % self.elements[i]]) for i in range(len(self.elements))])
         self.BoxSize = self.header_dict['BoxSize']
         self.HubbleParam  = self.header_dict['HubbleParam']
+        self.Omega0, self.OmegaLambda, self.OmegaBaryon, self.a0 = self.header_dict['Omega0'], self.header_dict['OmegaLambda'], self.header_dict['OmegaBaryon'], self.header_dict['ExpansionFactor']
         self.NumPartTotal = self.header_dict['NumPart_Total']
         self.ParticleTypePresent = np.where(self.NumPartTotal > 0)[0]
         self.ParticleTypePresent_file = np.zeros((len(self.files),len(self.NumPartTotal)), dtype=bool)
@@ -114,6 +116,25 @@ class Snapshot:
             # load this file and get the particles
             out.append(np.array(h5py.File(file, 'r')[key]))
         return np.concatenate(out)
+
+    def t_lookback(a):
+        return a / (np.sqrt(self.Omega0 * a + self.OmegaLambda * (a ** 4)))
+
+    def z2age(z):
+        a = 1 / (1 + z)
+        t = np.array([quad(t_lookback, x, self.a0)[0] for x in a])
+        return (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t
+
+    def a2age(a):
+        t = np.array([quad(t_lookback, x, self.a0)[0] for x in a])
+        return (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t
+
+    def z2tau(z):
+        t_em = quad(t_lookback, 0., self.a0)[0]
+        t_em = (1 / (h * 100)) * (3.086e19 / 3.1536e16) * t_em
+        a = 1 / (1 + z)
+        t = np.array([quad(t_lookback, x, self.a0)[0] for x in a])
+        return t_em - ((1 / (h * 100)) * (3.086e19 / 3.1536e16) * t)
 
 
 
