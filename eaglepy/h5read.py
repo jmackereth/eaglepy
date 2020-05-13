@@ -191,7 +191,7 @@ class SnapshotRegion(Snapshot):
         for ii,type in enumerate(particles_in_volume):
             Nfiles = self._get_parttype_files(type, keys)
             if justfiles:
-                print Nfiles
+                print(Nfiles)
             self.files_for_region.append(np.array(self.files)[Nfiles])
             self.file_indices.append(Nfiles)
             if justfiles:
