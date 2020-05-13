@@ -162,15 +162,15 @@ class SnapshotRegion(Snapshot):
     history:
         written - Mackereth (UoB) - 22/11/2019
      """
-    def __init__(self, run, model, tag, center, sidelength):
+    def __init__(self, run, model, tag, center, sidelength, just_get_files=False):
         #we want everything from SnapShot plus some extras
         super().__init__(run, model, tag)
         self.center = center
         self.sidelength = sidelength
         self.centered = False
-        self._index_region(self.center, self.sidelength)
+        self._index_region(self.center, self.sidelength, justfiles=just_get_files)
 
-    def _index_region(self, center, side_length, phgrid_n=70):
+    def _index_region(self, center, side_length, phgrid_n=70, justfiles=False):
         """ Load a region defined by a central cordinate and a side length
         arguments:
         center - the [x,y,z] coordinate of the desired center (simulation units)
@@ -192,6 +192,8 @@ class SnapshotRegion(Snapshot):
             Nfiles = self._get_parttype_files(type, keys)
             self.files_for_region.append(np.array(self.files)[Nfiles])
             self.file_indices.append(Nfiles)
+            if justfiles:
+                continue
             present = False
             for file in self.files_for_region[ii]:
                 present += _particle_type_present(type, file)
@@ -206,12 +208,13 @@ class SnapshotRegion(Snapshot):
                 indices.append(thistypeindices)
             else:
                 self.ParticleTypePresent = np.delete(self.ParticleTypePresent,ii)
-        self.velocities = velocities
-        self.coordinates = coordinates
-        self.indices = indices
-        self.NumPart_ThisRegion = np.zeros(len(self.NumPartTotal),dtype=np.int64)
-        for ii,type in enumerate(self.ParticleTypePresent):
-            self.NumPart_ThisRegion[type] = len(self.coordinates[ii])
+        if not justfiles:
+            self.velocities = velocities
+            self.coordinates = coordinates
+            self.indices = indices
+            self.NumPart_ThisRegion = np.zeros(len(self.NumPartTotal),dtype=np.int64)
+            for ii,type in enumerate(self.ParticleTypePresent):
+                self.NumPart_ThisRegion[type] = len(self.coordinates[ii])
 
 
     def _get_parttype_indices(self, parttype, files, file_indices):
