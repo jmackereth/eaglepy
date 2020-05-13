@@ -190,8 +190,9 @@ class SnapshotRegion(Snapshot):
         indices = []
         for ii,type in enumerate(particles_in_volume):
             Nfiles = self._get_parttype_files(type, keys)
-            if justfiles:
-                print(Nfiles)
+            if len(Nfiles) < 1:
+                self.ParticleTypePresent = np.delete(self.ParticleTypePresent,ii)
+                continue
             self.files_for_region.append(np.array(self.files)[Nfiles])
             self.file_indices.append(Nfiles)
             if justfiles:
