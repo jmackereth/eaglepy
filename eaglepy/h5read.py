@@ -57,7 +57,7 @@ class Snapshot:
         for ii, file in enumerate(self.files):
             head = dict(h5py.File(file, 'r')['/Header'].attrs.items())
             self.ParticleTypePresent_file[ii, head['NumPart_ThisFile'] > 0] = True
-        self._ptypeind = {self.ParticleTypes[self.ParticleTypePresent][i]:i for i in range(len(self.ParticleTypePresent))}
+        self._ptypeind = {self.ParticleTypes[self.ParticleTypePresent][i]:i for i in range(len(self.ParticleTypes[self.ParticleTypePresent]))}
         #get the Hash Table info for P-H key sorting
         self.HashBits = dict(h5py.File(self.files[0], 'r')['/HashTable'].attrs.items())['HashBits']
         self.HashGridSideLength = 2**self.HashBits
