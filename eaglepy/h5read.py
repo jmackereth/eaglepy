@@ -188,9 +188,7 @@ class SnapshotRegion(Snapshot):
         coordinates = []
         velocities = []
         indices = []
-        delta_ii = 0
         for ii,type in enumerate(particles_in_volume):
-            ii -= delta_ii
             Nfiles = self._get_parttype_files(type, keys)
             if len(Nfiles) < 1:
                 #particle is not present in the region
