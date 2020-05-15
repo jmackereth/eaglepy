@@ -51,7 +51,8 @@ class Snapshot:
         self.HubbleParam  = self.header_dict['HubbleParam']
         self.Omega0, self.OmegaLambda, self.OmegaBaryon, self.a0 = self.header_dict['Omega0'], self.header_dict['OmegaLambda'], self.header_dict['OmegaBaryon'], self.header_dict['ExpansionFactor']
         self.NumPartTotal = self.header_dict['NumPart_Total']
-        self.ParticleTypePresent = np.where(self.NumPartTotal > 0)[0]
+        self.ParticleTypes = np.array([0,1,2,3,4,5])
+        self.ParticleTypePresent = self.NumPartTotal > 0
         self.ParticleTypePresent_file = np.zeros((len(self.files),len(self.NumPartTotal)), dtype=bool)
         for ii, file in enumerate(self.files):
             head = dict(h5py.File(file, 'r')['/Header'].attrs.items())
@@ -61,10 +62,10 @@ class Snapshot:
         self.HashBits = dict(h5py.File(self.files[0], 'r')['/HashTable'].attrs.items())['HashBits']
         self.HashGridSideLength = 2**self.HashBits
         self.HashGridCellSize = self.BoxSize/self.HashGridSideLength
-        self.firstkeys = np.zeros((len(self.ParticleTypePresent),self.nfiles))
-        self.lastkeys  = np.zeros((len(self.ParticleTypePresent),self.nfiles))
+        self.firstkeys = np.zeros((len(self.ParticleTypes[self.ParticleTypePresent]),self.nfiles))
+        self.lastkeys  = np.zeros((len(self.ParticleTypes[self.ParticleTypePresent]),self.nfiles))
         self.datasets = {}
-        for ii,parttype in enumerate(self.ParticleTypePresent):
+        for ii,parttype in enumerate(self.ParticleTypes[self.ParticleTypePresent]):
             self.firstkeys[ii] = np.array(h5py.File(self.files[0], 'r')['/HashTable/PartType'+str(parttype)+'/FirstKeyInFile'])
             self.lastkeys[ii] = np.array(h5py.File(self.files[0], 'r')['/HashTable/PartType'+str(parttype)+'/LastKeyInFile'])
             #be sure we get a file with this parttype (only really an issue for when low N stars!!)
@@ -79,7 +80,7 @@ class Snapshot:
         #load coordinates and velocities
         coordinates = []
         velocities = []
-        for ii,type in enumerate(self.ParticleTypePresent):
+        for ii,type in enumerate(self.ParticleTypes[self.ParticleTypePresent]):
             Nfiles = self._get_parttype_files(type, keys)
             self.files_for_region.append(np.array(self.files)[Nfiles])
             #now load the coordinates in these files and save the indices for each particle type
@@ -92,7 +93,7 @@ class Snapshot:
 
     def _get_coords_vels(self, parttype, files):
         """get the coordinates and velocities for all particles of a certain type"""
-        if parttype not in self.ParticleTypePresent:
+        if not self.ParticleTypePresent[parttype]:
             warnings.warn('Particle type is not present, returning empty arrays...')
             return np.array([]), np.array([]), np.array([])
         coords, velocities, indices = [], [], []
@@ -107,7 +108,7 @@ class Snapshot:
 
     def get_dataset(self, parttype, dataset):
         """ get the data for a given entry in the HDF5 file for the given region """
-        if parttype not in self.ParticleTypePresent:
+        if not self.ParticleTypePresent[parttype]:
             warnings.warn('Particle type is not present, returning empty arrays...')
             return np.array([])
         key = os.path.join('/PartType'+str(parttype),dataset)
@@ -182,17 +183,19 @@ class SnapshotRegion(Snapshot):
         #work out which files contain the desired region
         grid = peano.coordinate_grid(center, side_length, self.BoxSize, n=phgrid_n)
         keys  = peano.get_unique_grid_keys(grid, self.HashGridCellSize, self.BoxSize, bits=self.HashBits)
-        particles_in_volume = np.copy(self.ParticleTypePresent)
+        particles_in_volume = self.ParticleTypes[self.ParticleTypePresent]
         self.files_for_region = []
         self.file_indices = []
         coordinates = []
         velocities = []
         indices = []
-        for ii,type in enumerate(particles_in_volume):
+        for ii in self.ParticleTypes:
+            if not self.ParticleTypePresent[ii]:
+                continue
             Nfiles = self._get_parttype_files(type, keys)
             if len(Nfiles) < 1:
-                #particle is not present in the region
-                self.ParticleTypePresent = np.delete(self.ParticleTypePresent,ii)
+                #particle is not present in the region - remove from here
+                self.ParticleTypePresent[ii]  = 0
                 continue
             thisfiles = np.array(self.files)[Nfiles]
             thisindices = Nfiles
@@ -207,13 +210,13 @@ class SnapshotRegion(Snapshot):
                 #now load the coordinates in these files and save the indices for each particle type
                 thistypecoord, thistypevels, thistypeindices = self._get_parttype_indices(type, thisfiles, thisindices)
                 if thistypecoord is None:
-                    self.ParticleTypePresent = np.delete(self.ParticleTypePresent,ii)
+                    self.ParticleTypePresent[ii] = 0
                     continue
                 coordinates.append(thistypecoord)
                 velocities.append(thistypevels)
                 indices.append(thistypeindices)
             else:
-                self.ParticleTypePresent = np.delete(self.ParticleTypePresent,ii)
+                self.ParticleTypePresent[ii] = 0
         if not justfiles:
             self.velocities = velocities
             self.coordinates = coordinates
@@ -251,7 +254,7 @@ class SnapshotRegion(Snapshot):
 
     def get_dataset(self, parttype, dataset):
         """ get the data for a given entry in the HDF5 file for the given region """
-        if parttype not in self.ParticleTypePresent:
+        if not self.ParticleTypePresent[parttype]:
             warnings.warn('Particle type is not present, returning empty arrays...')
             return np.array([])
         key = os.path.join('/PartType'+str(parttype),dataset)
