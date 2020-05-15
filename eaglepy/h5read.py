@@ -188,21 +188,26 @@ class SnapshotRegion(Snapshot):
         coordinates = []
         velocities = []
         indices = []
+        delta_ii = 0
         for ii,type in enumerate(particles_in_volume):
+            ii -= delta_ii
             Nfiles = self._get_parttype_files(type, keys)
             if len(Nfiles) < 1:
+                #particle is not present in the region
                 self.ParticleTypePresent = np.delete(self.ParticleTypePresent,ii)
                 continue
-            self.files_for_region.append(np.array(self.files)[Nfiles])
+            thisfiles = np.array(self.files)[Nfiles]
+            thisindices = Nfiles
+            self.files_for_region.append(thisfiles)
             self.file_indices.append(Nfiles)
             if justfiles:
                 continue
             present = False
-            for file in self.files_for_region[ii]:
+            for file in thisfiles:
                 present += _particle_type_present(type, file)
             if present:
                 #now load the coordinates in these files and save the indices for each particle type
-                thistypecoord, thistypevels, thistypeindices = self._get_parttype_indices(type, self.files_for_region[ii], self.file_indices[ii])
+                thistypecoord, thistypevels, thistypeindices = self._get_parttype_indices(type, thisfiles, thisindices)
                 if thistypecoord is None:
                     self.ParticleTypePresent = np.delete(self.ParticleTypePresent,ii)
                     continue
