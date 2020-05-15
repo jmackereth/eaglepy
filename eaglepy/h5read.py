@@ -222,7 +222,7 @@ class SnapshotRegion(Snapshot):
             self.coordinates = coordinates
             self.indices = indices
             self.NumPart_ThisRegion = np.zeros(len(self.NumPartTotal),dtype=np.int64)
-            for ii,type in enumerate(self.ParticleTypePresent):
+            for ii,type in enumerate(self.ParticleTypes[self.ParticleTypePresent]):
                 self.NumPart_ThisRegion[type] = len(self.coordinates[ii])
 
 
