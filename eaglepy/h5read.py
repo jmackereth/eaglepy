@@ -192,7 +192,7 @@ class SnapshotRegion(Snapshot):
         for ii in self.ParticleTypes:
             if not self.ParticleTypePresent[ii]:
                 continue
-            Nfiles = self._get_parttype_files(type, keys)
+            Nfiles = self._get_parttype_files(ii, keys)
             if len(Nfiles) < 1:
                 #particle is not present in the region - remove from here
                 self.ParticleTypePresent[ii]  = 0
@@ -205,10 +205,10 @@ class SnapshotRegion(Snapshot):
                 continue
             present = False
             for file in thisfiles:
-                present += _particle_type_present(type, file)
+                present += _particle_type_present(ii, file)
             if present:
                 #now load the coordinates in these files and save the indices for each particle type
-                thistypecoord, thistypevels, thistypeindices = self._get_parttype_indices(type, thisfiles, thisindices)
+                thistypecoord, thistypevels, thistypeindices = self._get_parttype_indices(ii, thisfiles, thisindices)
                 if thistypecoord is None:
                     self.ParticleTypePresent[ii] = 0
                     continue
