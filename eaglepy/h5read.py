@@ -81,15 +81,27 @@ class Snapshot:
         coordinates = []
         velocities = []
         for ii,type in enumerate(self.ParticleTypes[self.ParticleTypePresent]):
-            Nfiles = self._get_parttype_files(type, keys)
-            self.files_for_region.append(np.array(self.files)[Nfiles])
             #now load the coordinates in these files and save the indices for each particle type
             thistypecoord, thistypevels = self._get_parttype_indices(type, self.files)
             coordinates.append(thistypecoord)
             velocities.append(thistypevels)
-            indices.append(thistypeindices)
         self.velocities = velocities
         self.coordinates = coordinates
+
+    def _get_parttype_indices(self, parttype, files):
+        """get the coordinates and indices for a given particle type in a given region"""
+        coords, velocities, indices = [], [], []
+        for ii,file in enumerate(files):
+            #check this particle type is present here
+            if not _particle_type_present(parttype, file):
+                return None, None
+            # load the file
+            thisfilecoords = np.array(h5py.File(file, 'r')['/PartType'+str(parttype)+'/Coordinates'])
+            thisfilevels = np.array(h5py.File(file, 'r')['/PartType'+str(parttype)+'/Velocity'])
+            #store the coordinates and the indices of these particles in the file
+            coords.append(thisfilecoords)
+            velocities.append(thisfilevels)
+        return np.concatenate(coords), np.concatenate(velocities)
 
     def _get_coords_vels(self, parttype, files):
         """get the coordinates and velocities for all particles of a certain type"""
@@ -117,6 +129,30 @@ class Snapshot:
             # load this file and get the particles
             out.append(np.array(h5py.File(file, 'r')[key]))
         return np.concatenate(out)
+
+    def _single_X_H(self,X,H,element):
+        solar = self.solar_abundances[element]
+        solarH = self.solar_abundances['Hydrogen']
+        return np.log10(X/H)-np.log10(solar/solarH)
+
+    def abundance_ratios(self,gas=False,smoothed=True):
+        """ Compute element abundance ratios for the region, returns a dict of [X/H] """
+        if smoothed:
+            e_key = 'SmoothedElementAbundance'
+        else:
+            e_key = 'ElementAbundance'
+        if gas:
+            parttype = 0
+        else:
+            parttype = 4
+        entries = []
+        H = self.get_dataset(parttype,os.path.join(e_key,'Hydrogen'))
+        for i in range(len(self.elements)):
+            if self.elements[i] == 'Hydrogen' or self.elements[i] == 'Sulphur':
+                continue
+            X = self.get_dataset(parttype,os.path.join(e_key,self.elements[i]))
+            entries.append((self.elements[i],self._single_X_H(X,H,self.elements[i])))
+        return dict(entries)
 
     def t_lookback(self,a):
         return a / (np.sqrt(self.Omega0 * a + self.OmegaLambda * (a ** 4)))
