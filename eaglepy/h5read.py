@@ -125,8 +125,10 @@ class Snapshot:
             return np.array([])
         key = os.path.join('/PartType'+str(parttype),dataset)
         if physical:
-            #find conversion factor 
+            #find conversion factor
             factor = _conversion_factor(key, self.a0, self.HubbleParam, cgs=cgs)
+        elif not physical and cgs:
+            factor = h5py.File(self.files[0], 'r')[key].attrs['CGSConversionFactor']
         else:
             #else just multiply by 1!
             factor = 1.
@@ -307,19 +309,27 @@ class SnapshotRegion(Snapshot):
             indices.append(thisfileindices)
         return np.concatenate(coords), np.concatenate(velocities), indices
 
-    def get_dataset(self, parttype, dataset):
+    def get_dataset(self, parttype, dataset, physical=False, cgs=False):
         """ get the data for a given entry in the HDF5 file for the given region """
         if not self.ParticleTypePresent[parttype]:
             warnings.warn('Particle type is not present, returning empty arrays...')
             return np.array([])
         key = os.path.join('/PartType'+str(parttype),dataset)
+        if physical:
+            #find conversion factor
+            factor = _conversion_factor(key, self.a0, self.HubbleParam, cgs=cgs)
+        elif not physical and cgs:
+            factor = h5py.File(self.files[0], 'r')[key].attrs['CGSConversionFactor']
+        else:
+            #else just multiply by 1!
+            factor = 1.
         out = []
         ptypeind = self._ptypeind[parttype]
         for ii,file in enumerate(self.files_for_region[ptypeind]):
             if not _particle_type_present(parttype, file):
                 continue
             # load this file and get the particles
-            out.append(np.array(h5py.File(file, 'r')[key])[self.indices[ptypeind][ii]])
+            out.append(np.array(h5py.File(file, 'r')[key])[self.indices[ptypeind][ii]] * factor)
         if len(out) < 2:
             return out[0]
         return np.concatenate(out)
