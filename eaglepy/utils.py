@@ -1,5 +1,29 @@
 import numpy as np
 
+def kappa_co(coordinates, velocities, mass, rlim_kpc=30):
+    """
+    kappa_co following Correa et al. (2017)
+
+    arguments:
+        coordinates - coordinates in Mpc
+        velocities - velocities in km s^{-1}
+        mass - stellar mass (1e10 M_sun)
+
+    history:
+        written - Mackereth (UoB) - 22/07/2020
+    """
+    r = np.linalg.norm(coordinates, axis=1)*1e3
+    mask = r < 30
+    mass = snap.get_dataset(4,'Mass')[mask]
+    pos = coordinates[mask]*1e3
+    vel = velocities[mask]
+
+    Rxy = np.linalg.norm(pos[:,:2], axis=1)
+    L = (mass*np.cross(pos, vel).T).T
+    K = np.sum(0.5*mass*np.linalg.norm(vel,axis=1)**2)
+    Krot = np.sum(0.5*mass*(L[:,2]/(mass*Rxy))**2)
+    return Krot/K
+
 
 def angular_momentum(coordinates, velocities, mass):
     """
