@@ -126,7 +126,7 @@ class Snapshot:
         key = os.path.join('/PartType'+str(parttype),dataset)
         if physical:
             #find conversion factor
-            factor = _conversion_factor(key, self.a0, self.HubbleParam, cgs=cgs)
+            factor = self._conversion_factor(key, self.a0, self.HubbleParam, cgs=cgs)
         elif not physical and cgs:
             factor = h5py.File(self.files[0], 'r')[key].attrs['CGSConversionFactor']
         else:
@@ -139,7 +139,7 @@ class Snapshot:
         return np.concatenate(out)
 
     def _conversion_factor(self, key, a, h, cgs=False):
-        aexp_scale, h_scale = _get_conversion_factor_exponents(key)
+        aexp_scale, h_scale = self._get_conversion_factor_exponents(key)
         if cgs:
             cgs_factor = h5py.File(self.files[0], 'r')[key].attrs['CGSConversionFactor']
         else:
@@ -317,7 +317,7 @@ class SnapshotRegion(Snapshot):
         key = os.path.join('/PartType'+str(parttype),dataset)
         if physical:
             #find conversion factor
-            factor = _conversion_factor(key, self.a0, self.HubbleParam, cgs=cgs)
+            factor = self._conversion_factor(key, self.a0, self.HubbleParam, cgs=cgs)
         elif not physical and cgs:
             factor = h5py.File(self.files[0], 'r')[key].attrs['CGSConversionFactor']
         else:
