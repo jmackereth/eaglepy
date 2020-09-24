@@ -41,7 +41,7 @@ class Snapshot:
         if not os.path.exists(os.path.join(self.path, self.base_subfile+'.0.hdf5')):
             raise Exception('could not see snapshot data in directory: '+self.path)
         #get the files related to this snapshot and load some of their metadata
-        self.files = natural_sort(glob.glob(os.path.join(self.path, self.base_subfile+'*')))
+        self.files = natural_sort(glob.glob(os.path.join(self.path, self.base_subfile+'*.hdf5')))
         self.nfiles = len(self.files)
         self.header_dict = dict(h5py.File(self.files[0], 'r')['/Header'].attrs.items())
         self.abundance_dict = dict(h5py.File(self.files[0], 'r')['/Parameters/ChemicalElements'].attrs.items())
@@ -464,7 +464,7 @@ class Subfind:
         if not os.path.exists(os.path.join(self.path, self.base_subfile+'.0.hdf5')):
             raise Exception('could not see snapshot data in directory: '+self.path)
         #get the files related to this snapshot and load some of their metadata
-        self.files = natural_sort(glob.glob(os.path.join(self.path, self.base_subfile+'*')))
+        self.files = natural_sort(glob.glob(os.path.join(self.path, self.base_subfile+'*.hdf5')))
         self.nfiles = len(self.files)
         self.header_dict = dict(h5py.File(self.files[0], 'r')['/Header'].attrs.items())
         self.datasets = {}
