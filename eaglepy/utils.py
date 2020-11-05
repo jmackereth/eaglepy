@@ -24,6 +24,26 @@ def kappa_co(coordinates, velocities, mass, rlim_kpc=30):
     Krot = np.sum(0.5*mass*(L[:,2]/(mass*Rxy))**2)
     return Krot/K
 
+def t_con(dens, m_g=1.8e6):
+    mu = 1.22
+    m_p = 1.6726e-24
+    T_0 = 8e3
+    xH = 0.752
+    rho_0 = 0.1 * m_p / xH
+    P_0_on_kb = rho_0*T_0/mu/m_p
+    P_eos_on_kb = P_0_on_kb*((dens*6.77e-31)/rho_0)**(4./3.)
+    P_eos = P_eos_on_kb*1.38e-16
+    G = 6.67e-8 #cgs
+    A = 1.515e-4 / 1e6
+    nhs = dens2nh(dens)
+    ns = np.zeros(len(dens))
+    t_g = 1.67e9*(P_eos_on_kb/10**3)**-0.2 #schaye and dalla vecchia 08 approximation
+    return t_g, P_eos
+
+def dens2nh(dens):
+    tdens = (0.752/1.6726e-24)*(dens*6.77e-31)
+    return tdens
+
 
 def angular_momentum(coordinates, velocities, mass):
     """
