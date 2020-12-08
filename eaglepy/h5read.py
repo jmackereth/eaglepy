@@ -480,9 +480,9 @@ class Subfind:
         out = []
         if physical:
             #find conversion factor
-            factor = self._conversion_factor(key, self.a0, self.HubbleParam, cgs=cgs)
+            factor = self._conversion_factor(dataset, self.a0, self.HubbleParam, cgs=cgs)
         elif not physical and cgs:
-            factor = h5py.File(self.files[0], 'r')[key].attrs['CGSConversionFactor']
+            factor = h5py.File(self.files[0], 'r')[dataset].attrs['CGSConversionFactor']
         else:
             #else just multiply by 1!
             factor = 1
