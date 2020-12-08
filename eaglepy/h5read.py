@@ -472,13 +472,59 @@ class Subfind:
         for base in bases:
             self.datasets[base] = list(h5py.File(self.files[0], 'r')[base].keys())
 
-    def get_dataset(self, dataset):
+    def get_dataset(self, dataset, physical=False, cgs=False):
         """ get the data for a given entry in the HDF5 files """
         out = []
+        if physical:
+            #find conversion factor
+            factor = self._conversion_factor(key, self.a0, self.HubbleParam, cgs=cgs)
+        elif not physical and cgs:
+            factor = h5py.File(self.files[0], 'r')[key].attrs['CGSConversionFactor']
+        else:
+            #else just multiply by 1!
+            factor = 1.
         for file in self.files:
             # load this file and get the particles
-            out.append(np.array(h5py.File(file, 'r')[dataset])[:])
+            out.append(np.array(h5py.File(file, 'r')[dataset])[:] * factor)
         return np.concatenate(out)
+
+    def get_dataset(self, parttype, dataset, physical=False, cgs=False):
+        """ get the data for a given entry in the HDF5 file for the given region """
+        if not self.ParticleTypePresent[parttype]:
+            warnings.warn('Particle type is not present, returning empty arrays...')
+            return np.array([])
+        key = os.path.join('/PartType'+str(parttype),dataset)
+        if physical:
+            #find conversion factor
+            factor = self._conversion_factor(key, self.a0, self.HubbleParam, cgs=cgs)
+        elif not physical and cgs:
+            factor = h5py.File(self.files[0], 'r')[key].attrs['CGSConversionFactor']
+        else:
+            #else just multiply by 1!
+            factor = 1.
+        out = []
+        ptypeind = self._ptypeind[parttype]
+        for ii,file in enumerate(self.files_for_region[ptypeind]):
+            if not _particle_type_present(parttype, file):
+                continue
+            # load this file and get the particles
+            out.append(np.array(h5py.File(file, 'r')[key])[self.indices[ptypeind][ii]] * factor)
+        if len(out) < 2:
+            return out[0]
+        return np.concatenate(out)
+
+    def _conversion_factor(self, key, a, h, cgs=False):
+        aexp_scale, h_scale = self._get_conversion_factor_exponents(key)
+        if cgs:
+            cgs_factor = h5py.File(self.files[0], 'r')[key].attrs['CGSConversionFactor']
+        else:
+            cgs_factor = 1.
+        return a**(aexp_scale)*h**(h_scale)*cgs_factor
+
+    def _get_conversion_factor_exponents(self, key):
+        aexp_scale = h5py.File(self.files[0], 'r')[key].attrs['aexp-scale-exponent']
+        h_scale = h5py.File(self.files[0], 'r')[key].attrs['h-scale-exponent']
+        return aexp_scale, h_scale
 
 
 def natural_sort(l):
