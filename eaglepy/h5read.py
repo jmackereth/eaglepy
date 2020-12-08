@@ -467,6 +467,9 @@ class Subfind:
         self.files = natural_sort(glob.glob(os.path.join(self.path, self.base_subfile+'*.hdf5')))
         self.nfiles = len(self.files)
         self.header_dict = dict(h5py.File(self.files[0], 'r')['/Header'].attrs.items())
+        self.BoxSize = self.header_dict['BoxSize']
+        self.HubbleParam  = self.header_dict['HubbleParam']
+        self.Omega0, self.OmegaLambda, self.OmegaBaryon, self.a0 = self.header_dict['Omega0'], self.header_dict['OmegaLambda'], self.header_dict['OmegaBaryon'], self.header_dict['ExpansionFactor']
         self.datasets = {}
         bases = ['FOF', 'Subhalo']
         for base in bases:
@@ -482,7 +485,7 @@ class Subfind:
             factor = h5py.File(self.files[0], 'r')[key].attrs['CGSConversionFactor']
         else:
             #else just multiply by 1!
-            factor = 1.
+            factor = 1
         for file in self.files:
             # load this file and get the particles
             out.append(np.array(h5py.File(file, 'r')[dataset])[:] * factor)
